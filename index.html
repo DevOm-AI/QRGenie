@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QR Code Generator</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        
+        .container {
+            background-color: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        
+        h1 {
+            color: #333;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .input-group {
+            margin-bottom: 20px;
+        }
+        
+        input[type="url"] {
+            width: 100%;
+            padding: 10px;
+            font-size: 16px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            margin-bottom: 10px;
+        }
+        
+        button {
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            width: 100%;
+        }
+        
+        button:hover {
+            background-color: #45a049;
+        }
+        
+        #qrcode {
+            text-align: center;
+            margin-top: 20px;
+        }
+        
+        #qrcode img {
+            max-width: 300px;
+            height: auto;
+        }
+        
+        .error {
+            color: red;
+            text-align: center;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>QR Code Generator</h1>
+        <div class="input-group">
+            <input type="url" id="url" placeholder="Enter URL here" required>
+            <button onclick="generateQR()">Generate QR Code</button>
+        </div>
+        <div id="qrcode"></div>
+        <div id="error" class="error"></div>
+    </div>
+
+    <script>
+        async function generateQR() {
+            const url = document.getElementById('url').value;
+            const qrcodeDiv = document.getElementById('qrcode');
+            const errorDiv = document.getElementById('error');
+            
+            if (!url) {
+                errorDiv.textContent = 'Please enter a URL';
+                return;
+            }
+            
+            try {
+                const response = await fetch('/generate', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                    },
+                    body: `url=${encodeURIComponent(url)}`
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    errorDiv.textContent = '';
+                    qrcodeDiv.innerHTML = `<img src="data:image/png;base64,${data.image}" alt="QR Code">`;
+                } else {
+                    errorDiv.textContent = data.error || 'Error generating QR code';
+                }
+            } catch (error) {
+                errorDiv.textContent = 'Error connecting to server';
+                console.error('Error:', error);
+            }
+        }
+    </script>
+</body>
+</html>
